@@ -32,3 +32,7 @@ jobs:
         with:
           name: JeetShahr-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+- uses: android-actions/setup-android@v3
+  with:
+    accept-android-sdk-licenses: true
+
