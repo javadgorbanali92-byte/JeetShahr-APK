@@ -1,4 +1,4 @@
-kname: Build Jeet Shahr Release APK
+name: Build Jeet Shahr Release APK
 
 on:
   workflow_dispatch:
