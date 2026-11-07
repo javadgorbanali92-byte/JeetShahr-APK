@@ -1,4 +1,4 @@
-name: Build Jeet Shahr APK
+kname: Build Jeet Shahr Release APK
 
 on:
   workflow_dispatch:
@@ -16,6 +16,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
       - name: Install Android SDK
         run: |
           SDK="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
@@ -23,14 +27,25 @@ jobs:
           yes | "$SDK" --licenses
           "$SDK" --install "platforms;android-35" "build-tools;35.0.0"
 
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+      - name: Prepare release signing
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release-final.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/release-final.jks"
+            echo "storePassword=$RELEASE_STORE_PASSWORD"
+            echo "keyAlias=$RELEASE_KEY_ALIAS"
+            echo "keyPassword=$RELEASE_KEY_PASSWORD"
+          } > keystore.properties
 
       - name: Build APK
-        run: gradle assembleDebug
+        run: gradle assembleRelease
 
       - uses: actions/upload-artifact@v4
         with:
-          name: JeetShahr-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: JeetShahr-Release-APK
+          path: app/build/outputs/apk/release/app-release.apk
